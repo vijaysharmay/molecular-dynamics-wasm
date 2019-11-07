@@ -2,9 +2,8 @@ const lib = import("./pkg");
 
 (() => {
     lib.then(instance => {
-        const { render, init_panic_hook, mouse_move, get_clicked_node } = instance;
+        const { draw, init_panic_hook, mouse_move, get_clicked_node } = instance;
         const canvas = document.getElementById("canvas");
-        const context = canvas.getContext("2d");
 
         window.addEventListener('resize', resizeCanvas, false);
 
@@ -16,11 +15,17 @@ const lib = import("./pkg");
             const clickedElement = window.sessionStorage.getItem("clickedElement");
             if(clickedElement && clickedElement !== 'Node not found'){
                 window.sessionStorage.setItem('data', JSON.stringify(mouse_move({ x: parseFloat(event.x), y: parseFloat(event.y) }, getData(), clickedElement)));
+                draw(getData());
             }
         });
 
         canvas.addEventListener('mouseup', function(event){
-            window.sessionStorage.removeItem('clickedElement');
+            const clickedElement = window.sessionStorage.getItem("clickedElement");
+            if(clickedElement && clickedElement !== 'Node not found'){
+                window.sessionStorage.setItem('data', window.sessionStorage.getItem('initData'));
+                window.sessionStorage.setItem('clickedElement', 'Node not found');
+                draw(getData());
+            }
         });
 
 
@@ -47,6 +52,7 @@ const lib = import("./pkg");
                 return JSON.parse(data);
             }else{
                 window.sessionStorage.setItem('data', JSON.stringify(initialData));
+                window.sessionStorage.setItem('initData', JSON.stringify(initialData));
                 return initialData;
             }
         }
@@ -56,9 +62,15 @@ const lib = import("./pkg");
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             init_panic_hook();
-            render(getData());
+            draw(getData());
         }
 
-        resizeCanvas();
+        resizeCanvas();        
+
+        // function update(){
+        //     if(window.sessionStorage.getItem('clickedItem') == 'Node not found') return;
+        //     window.requestAnimationFrame(update);
+        //     draw(getData());
+        // }
     });
 })();

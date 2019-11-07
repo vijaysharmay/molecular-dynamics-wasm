@@ -43,12 +43,6 @@ pub fn init_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub fn render(graph: &JsValue) {
-    let graph: Graph = graph.into_serde().unwrap();
-    draw(&graph);
-}
-
-#[wasm_bindgen]
 pub fn get_clicked_node(position: &JsValue, graph: &JsValue) -> String {
     let graph: Graph = graph.into_serde().unwrap();
     let position: Position = position.into_serde().unwrap();
@@ -78,7 +72,7 @@ pub fn mouse_move(position: &JsValue, graph: &JsValue, id: String) -> JsValue{
         let position: Position = if node.id == id{
             Position { x: position.x, y: position.y }
         }else{
-            Position { x: node.position.x - vx, y: node.position.y - vy }
+            Position { x: node.position.x, y: node.position.y }
         };
         return Node { id: node.id.clone(), position, size: node.size };
     }).into_iter().collect::<Vec<Node>>();
@@ -86,8 +80,6 @@ pub fn mouse_move(position: &JsValue, graph: &JsValue, id: String) -> JsValue{
     let updated_links: Vec<Link> = graph.links;
 
     let updated_graph = Graph { nodes: updated_nodes, links: updated_links };
-
-    draw(&updated_graph);
 
     return JsValue::from_serde(&updated_graph).unwrap();
 }
@@ -113,7 +105,9 @@ fn get_canvas_context() -> (CanvasRenderingContext2d, f64, f64){
     return (context, width, height);
 }
 
-fn draw(graph: &Graph) {
+#[wasm_bindgen]
+pub fn draw(graph: &JsValue) {
+    let graph: Graph = graph.into_serde().unwrap();
     let (context, width, height) = get_canvas_context();
     context.clear_rect(0.0, 0.0, width, height);
 
